@@ -1,9 +1,11 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkJha2kiLCJpZCI6IjY0OGZlNTM5YjcwOTJkNDI3MzNlMWEzOSIsImlhdCI6MTY4NzIwMDgyN30.bCjB3fNvDdWm5__7OGakWoAmObsG41F1CB_SjOt8wlw
 
 {
-  "title": "Test2",
-  "author": "Test2",
-  "url": "www.test.com",
-  "likes": 28
+  "title": "TestToken",
+  "author": "TestToken",
+  "url": "www.testtoken.com",
+  "likes": 59,
+  "userId": "648fe539b7092d42733e1a39"
 }

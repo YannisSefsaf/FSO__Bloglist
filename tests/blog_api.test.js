@@ -5,6 +5,7 @@ const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -60,6 +61,30 @@ describe("GET /api/blogs", () => {
 });
 
 describe("POST /api/blogs", () => {
+  let authToken;
+
+  beforeAll(async () => {
+    // Create a new user in the test database
+    await User.deleteMany({});
+
+    const newUser = {
+      username: "testuser",
+      password: "testpassword",
+      name: "Test User",
+    };
+
+    await api.post("/api/users").send(newUser);
+
+    // Log in the user to obtain the authentication token
+    const loginCredentials = {
+      username: newUser.username,
+      password: newUser.password,
+    };
+
+    const response = await api.post("/api/login").send(loginCredentials);
+    authToken = response.body.token;
+  });
+
   test("adds a valid blog successfully", async () => {
     const newBlog = {
       title: "Test3",
@@ -70,6 +95,7 @@ describe("POST /api/blogs", () => {
 
     await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${authToken}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
@@ -91,16 +117,17 @@ describe("POST /api/blogs", () => {
 
     await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${authToken}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
     const blogsAtEnd = await helper.blogsInDb();
-    const blogZeroLikes = blogsAtEnd.filter(
+    const blogZeroLikes = blogsAtEnd.find(
       (blog) => blog.title === "missingLikes"
     );
 
-    expect(blogZeroLikes[0].likes).toEqual(0);
+    expect(blogZeroLikes.likes).toEqual(0);
   });
 
   test("returns 400 if required fields are missing", async () => {

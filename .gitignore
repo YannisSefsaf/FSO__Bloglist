@@ -1,2 +1,38 @@
-.env
+# Ignore node_modules directory
 node_modules/
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.*.local
+
+# Ignore log files
+*.log
+
+# Ignore operating system files
+.DS_Store
+Thumbs.db
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Ignore dependency lock files
+yarn.lock
+package-lock.json
+
+# Ignore compiled binaries or executables
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore backup or temporary files
+*~
+*.swp
+*.bak
+
+# Ignore cache or generated files
+.cache/
+*.cache
+*.tgz

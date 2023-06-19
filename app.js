@@ -4,7 +4,8 @@ const app = express();
 const cors = require("cors");
 const blogRouter = require("./routes/blog");
 const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
+const userRouter = require("./routes/user");
+const loginRouter = require("./routes/login");
 const {
   unknownEndpoint,
   errorHandler,
@@ -31,7 +32,8 @@ app.use(requestLogger);
 
 app.use("/", indexRouter);
 app.use("/api/blogs", blogRouter);
-app.use("/api/users", usersRouter);
+app.use("/api/users", userRouter);
+app.use("/api/login", loginRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);
