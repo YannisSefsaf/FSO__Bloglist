@@ -1,15 +1,6 @@
 require("express-async-errors");
 const Blog = require("../models/blog");
 const User = require("../models/user");
-const jwt = require("jsonwebtoken");
-
-const getTokenFrom = (request) => {
-  const authorization = request.get("authorization");
-  if (authorization && authorization.startsWith("Bearer ")) {
-    return authorization.replace("Bearer ", "");
-  }
-  return null;
-};
 
 const getBlogs = async (request, response) => {
   const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
@@ -26,18 +17,22 @@ const getBlog = async (request, response) => {
 };
 
 const createBlog = async (request, response) => {
-  const body = request.body;
-  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: "token invalid" });
+  const { title, author, url, likes } = request.body;
+  const userId = request.user?.id;
+  if (!userId) {
+    return response.status(401).json({ error: "please provide valid jwt" });
   }
-  const user = await User.findById(decodedToken.id);
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  }
 
   const blog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes || 0,
+    title,
+    author,
+    url,
+    likes: likes || 0,
     user: user.id,
   });
 
@@ -45,10 +40,31 @@ const createBlog = async (request, response) => {
   user.blogs = user.blogs.concat(savedBlog._id);
   await user.save();
 
-  response.status(201).json(savedBlog);
+  const populatedBlog = await Blog.findById(savedBlog._id).populate("user", {
+    username: 1,
+    name: 1,
+  });
+
+  response.status(201).json(populatedBlog);
 };
 
 const deleteBlog = async (request, response) => {
+  const userId = request.user?.id;
+  const blogId = request.params.id;
+  const blog = await Blog.findById(blogId);
+
+  if (!userId) {
+    return response.status(401).json({ error: "please provide valid jwt" });
+  }
+
+  if (!blog) {
+    return response.status(404).json({ error: "Blog not found" });
+  }
+
+  if (!(blog.user.toString() === userId)) {
+    return response.status(403).json({ error: "Unauthorized access" });
+  }
+
   await Blog.findByIdAndDelete(request.params.id);
   response.status(204).end();
 };
